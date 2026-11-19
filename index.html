@@ -38,9 +38,13 @@ var APP_URL = 'https://script.google.com/macros/s/AKfycbwJcRmhAY41_1WNojBmO21H78
 
 (function () {
   var msg = document.getElementById('msg');
-  var token = '';
-  // The code comes after # (never sent to the web host); ?w= also works.
-  try { token = new URLSearchParams(location.hash.replace(/^#/, '')).get('w') || new URLSearchParams(location.search).get('w') || ''; } catch (e) {}
+  var token = '', view = '';
+  // The code comes after # (never sent to the web host); ?w= also works. &v=status opens the Status screen.
+  try {
+    var h = new URLSearchParams(location.hash.replace(/^#/, '')), q = new URLSearchParams(location.search);
+    token = h.get('w') || q.get('w') || '';
+    view = (h.get('v') || q.get('v') || '') === 'status' ? 'status' : '';
+  } catch (e) {}
   token = token.replace(/[^A-Za-z0-9]/g, '');
   // Remember the code on this phone, so "Add to Home screen" icons that open without it still work.
   try {
@@ -55,9 +59,11 @@ var APP_URL = 'https://script.google.com/macros/s/AKfycbwJcRmhAY41_1WNojBmO21H78
   var f = document.createElement('iframe');
   f.id = 'app';
   f.title = 'Maintenance checklist';
-  f.setAttribute('allow', 'camera; clipboard-write');
+  f.setAttribute('allow', 'camera; clipboard-write; fullscreen');
+  f.setAttribute('allowfullscreen', '');
   f.setAttribute('referrerpolicy', 'no-referrer');
-  f.src = APP_URL + '?w=' + encodeURIComponent(token);
+  f.src = APP_URL + '?w=' + encodeURIComponent(token) + (view ? '&view=status' : '');
+  if (view) { document.title = 'MMP Status'; document.body.style.background = '#0B1220'; }
   f.onload = function () { msg.style.display = 'none'; };
   document.body.appendChild(f);
   setTimeout(function () { msg.style.display = 'none'; }, 15000);
